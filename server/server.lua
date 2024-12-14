@@ -499,47 +499,6 @@ RegisterServerEvent('cw-raidjob2:server:unlock', function (jobId)
     end
 end)
 
-RegisterServerEvent('cw-raidjob2:server:givePayout', function(diff)
-    local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
-
-    local caseContent = Config.Items.caseContent
-    if removeItemBySlot(caseContent, diff, src) then
-        for k, v in pairs(Config.Jobs[diff].Rewards) do
-            local chance = math.random(0,100)
-            if useDebug then
-               print('chance for '..v.item..': '..chance)
-            end
-            if chance < v.chance then
-                Player.Functions.AddItem(v.item, v.amount)
-                if Config.Inventory == 'qb' then
-                    TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items[v.item], "add")
-                elseif Config.Inventory == 'ox' then
-                    TriggerClientEvent('inventory:client:ItemBox', src, exports.ox_inventory:Items()[v.item], "add")
-                end
-            end
-        end
-        local payoutType = Config.Jobs[diff].payoutType
-        local payoutAmount = Config.Jobs[diff].payout
-        if useDebug then
-            print('payout', payoutType, payoutAmount)
-        end
-        if payoutType == 'cash' then
-            Player.Functions.AddMoney('cash', payoutAmount, 'Raid job payment: '..diff)
-        elseif payoutType == 'bank' then
-            Player.Functions.AddMoney('bank', payoutAmount, 'Raid job payment: '..diff)
-        elseif payoutType == 'crypto' then
-            if Config.UseRenewedCrypto then
-                exports['qb-phone']:AddCrypto(src, Config.CryptoType, payoutAmount)
-            else
-                Player.Functions.AddMoney('crypto', tonumber(payoutAmount), 'Raid job payment: '..diff)
-            end
-        end
-    else
-        print('Why u tryin 🙄')
-    end
-end)
-
 QBCore.Functions.CreateUseableItem(Config.Items.caseItem, function(source, item)
     if Config.Inventory == 'ox' then
       TriggerClientEvent('cw-raidjob2:client:attemtpToUnlockCase', source, item.metadata.diff)

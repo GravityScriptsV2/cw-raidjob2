@@ -165,17 +165,6 @@ CreateThread(function()
                     if not Config.Enabled then return false end
                     return canInteract(diff)
                 end
-            },
-            {
-                type = "client",
-                event = "cw-raidjob2:client:turnInGoods",
-                diff = diff,
-                icon = 'fas fa-hand-holding-usd',
-                label = Lang:t('info.turn_in_goods'),
-                canInteract = function()
-                    if not Config.Enabled then return false end
-                    return canInteract(diff) and hasContent(Config.Items.caseContent, diff)
-                end
             }
         }
         exports['qb-target']:AddTargetEntity(currentBoss, {
@@ -183,28 +172,6 @@ CreateThread(function()
             distance = 2.0
         })
     end
-end)
-
-RegisterNetEvent('cw-raidjob2:client:turnInGoods', function(data)
-    local diff = data.diff
-    if useDebug then
-        print('Getting reward for job with diff',diff)
-    end
-
-    TriggerEvent('animations:client:EmoteCommandStart', {"idle11"})
-    QBCore.Functions.Progressbar("getting_reward", Lang:t('info.talking_to_boss'), Config.BossTalkTime, false, true, {
-        disableMovement = true,
-        disableCarMovement = true,
-        disableMouse = false,
-        disableCombat = true,
-    }, {
-    }, {}, {}, function() -- Done
-        TriggerEvent('animations:client:EmoteCommandStart', {"c"})
-        TriggerServerEvent('cw-raidjob2:server:givePayout', diff)
-    end, function() -- Cancel
-        TriggerEvent('animations:client:EmoteCommandStart', {"c"})
-        QBCore.Functions.Notify(Lang:t("error.canceled"), 'error')
-    end)
 end)
 
 local function CleanUp()
