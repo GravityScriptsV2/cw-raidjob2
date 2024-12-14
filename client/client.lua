@@ -168,16 +168,6 @@ CreateThread(function()
             },
             {
                 type = "client",
-                event = "cw-raidjob2:client:cancelJob",
-                icon = "fas fa-times",
-                label = Lang:t('info.cancel_job'),
-                canInteract = function()
-                    if not Config.Enabled then return false end
-                    return onRun
-                end
-            },
-            {
-                type = "client",
                 event = "cw-raidjob2:client:turnInGoods",
                 diff = diff,
                 icon = 'fas fa-hand-holding-usd',
@@ -193,23 +183,6 @@ CreateThread(function()
             distance = 2.0
         })
     end
-end)
-
-RegisterNetEvent('cw-raidjob2:client:cancelJob', function(data)
-    TriggerEvent('animations:client:EmoteCommandStart', {"idle11"})
-    QBCore.Functions.Progressbar("getting_reward", Lang:t('info.canceling_job'), Config.BossTalkTime, false, true, {
-        disableMovement = true,
-        disableCarMovement = true,
-        disableMouse = false,
-        disableCombat = true,
-    }, {
-    }, {}, {}, function() -- Done
-        TriggerEvent('animations:client:EmoteCommandStart', {"c"})
-        TriggerServerEvent('cw-raidjob2:server:cancelJob', CurrentJob.jobId)
-    end, function() -- Cancel
-        TriggerEvent('animations:client:EmoteCommandStart', {"c"})
-        QBCore.Functions.Notify(Lang:t("error.canceled"), 'error')
-    end)
 end)
 
 RegisterNetEvent('cw-raidjob2:client:turnInGoods', function(data)
@@ -650,18 +623,6 @@ RegisterNetEvent('cw-raidjob2:client:caseUnlocked', function()
         CleanUp()
     end)
     onRun = false
-end)
-
-RegisterNetEvent('cw-raidjob2:client:jobCanceled', function(data)
-    CurrentJob = {}
-    if Config.UseMZSkills then
-        exports["mz-skills"]:UpdateSkill(Config.Skill, -Config.SkillAmount)
-    end
-    SetTimeout(Config.CleanupTimer, function()
-        CleanUp()
-    end)
-    onRun = false
-    QBCore.Functions.Notify(Lang:t('info.job_canceled'), 'error')
 end)
 
 RegisterNetEvent('cw-raidjob2:client:caseGrabbed', function()

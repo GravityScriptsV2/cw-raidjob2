@@ -563,12 +563,3 @@ end)
 QBCore.Functions.CreateCallback("cw-raidjob2:server:isInCooldown",function(source, cb)
      cb(Cooldown)
 end)
-
-RegisterServerEvent('cw-raidjob2:server:cancelJob', function(jobId)
-    for i,v in pairs(ActiveJobs[jobId].Group) do
-        if useDebug then
-           print('canceling job', jobId, i )
-        end
-        TriggerClientEvent('cw-raidjob2:client:jobCanceled', i)
-    end
-end)
