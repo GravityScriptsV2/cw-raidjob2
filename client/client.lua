@@ -120,60 +120,6 @@ local function hasContent(object, diff)
     end
 end
 
-local function canInteract(diff)
-    if onRun then return false end
-    local hasSkills = checkSkills(diff)
-    local hasToken = true
-    local hasCops = checkCops(diff)
-    if Config.UseTokens and Config.Jobs[diff].token ~= nil then
-        local tokens = nil
-        hasToken = exports['cw-tokens']:hasToken(Config.Jobs[diff].token)
-    end
-
-    return hasSkills and hasToken and hasCops
-end
-
---- Create bosses
-CreateThread(function()
-    for diff, job in pairs(Config.Jobs) do
-        local animation
-        if job.Boss.animation then
-            animation = job.Boss.animation
-        else
-            animation = "WORLD_HUMAN_STAND_IMPATIENT"
-        end
-        QBCore.Functions.LoadModel(job.Boss.model)
-        local currentBoss = CreatePed(0, job.Boss.model, job.Boss.coords.x, job.Boss.coords.y, job.Boss.coords.z-1.0, job.Boss.coords.w, false, false)
-        BossEntities[#BossEntities+1] = currentBoss
-        TaskStartScenarioInPlace(currentBoss,  animation)
-        FreezeEntityPosition(currentBoss, true)
-        SetEntityInvincible(currentBoss, true)
-        SetBlockingOfNonTemporaryEvents(currentBoss, true)
-        
-        if Config.UseSundownUtils then
-            exports['sundown-utils']:addPedToBanlist(currentBoss)
-        end
-
-        local options = {
-            {
-                type = "client",
-                event = "cw-raidjob2:client:attemptStart",
-                diff = diff,
-                icon = job.icon,
-                label = Config.Jobs[diff].description,
-                canInteract = function()
-                    if not Config.Enabled then return false end
-                    return canInteract(diff)
-                end
-            }
-        }
-        exports['qb-target']:AddTargetEntity(currentBoss, {
-            options = options,
-            distance = 2.0
-        })
-    end
-end)
-
 local function CleanUp()
     for i, entity in pairs(Entities) do
         print('deleting', entity)
