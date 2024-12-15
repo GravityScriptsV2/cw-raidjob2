@@ -19,7 +19,6 @@ Config.SpawnDistance = 200 -- How close a player in the group can be before the 
 
 Config.UseRenewedCrypto = false -- set to true if you use renewed phone crypto
 Config.CryptoType = 'MOON' -- set your crypto here
-Config.BossTalkTime = 5000 -- progress bar time for talking to bosses
 
 Config.Cooldown = 10000 --- Cooldown until next allowed run (in seconds)
 Config.DefaultValues = {
@@ -453,12 +452,6 @@ local lowJob = {
             message = "Good shit. Now unlock it with the key and bring the goods here when 5-0 is off your back"
         },
     },
-    Boss = {
-        coords = vector4(-906.32, -365.25, 130.28, 25.17),
-        model = 'g_f_importexport_01',
-        missionTitle = "Accept weed raid",
-        animation = 'WORLD_HUMAN_SMOKING_POT', -- OPTIONAL https://pastebin.com/6mrYTdQv
-    },
     Rewards = {
         { item = 'cokebaggy', amount = math.random(1, 5), chance = 10 },
         { item = '10kgoldchain', amount = 1, chance = 20 }
@@ -497,12 +490,6 @@ local midJob = {
             message = "Good shit. Now unlock it with the key and bring the goods here when 5-0 is off your back"
         },
     },
-    Boss = {
-        coords = vector4(-903.84, -363.97, 130.28, 27.2),
-        model = 'g_m_m_armlieut_01',
-        missionTitle = "Accept weed raid",
-        animation = 'WORLD_HUMAN_HANG_OUT_STREET', -- OPTIONAL https://pastebin.com/6mrYTdQv
-    },
     Rewards = {
         { item = 'cokebaggy', amount = math.random(1, 5), chance = 10 },
         { item = '10kgoldchain', amount = 1, chance = 20 }
@@ -539,12 +526,6 @@ local highJob = {
             subject = 'For sure legal stuff',
             message = "Good shit. Now unlock it with the key and bring the goods here when 5-0 is off your back"
         },
-    },
-    Boss = {
-        coords = vector4(-902.6, -363.26, 130.28, 7.22),
-        model = 'g_m_y_korlieut_01',
-        missionTitle = "Accept weed raid",
-        animation = 'WORLD_HUMAN_HANG_OUT_STREET', -- OPTIONAL https://pastebin.com/6mrYTdQv
     },
     Rewards = {
         { item = 'cokebaggy', amount = math.random(1, 5), chance = 10 },
