@@ -28,26 +28,6 @@ local Npcs = {
 }
 
 -- == Start == --
-local function verifyIsLeader(src)
-    if Config.UseRenewedPhoneGroups and exports['qb-phone']:GetGroupByMembers(src) then
-        local group = exports['qb-phone']:GetGroupByMembers(src)
-        local leader = exports['qb-phone']:GetGroupLeader(group)
-        return leader == src
-    else
-        return true
-    end
-end
-
-local function verifyGroupSize(src)
-    if Config.UseRenewedPhoneGroups and exports['qb-phone']:GetGroupByMembers(src) then
-        local group = exports['qb-phone']:GetGroupByMembers(src)
-        local size = exports['qb-phone']:getGroupSize(group)
-        return size <= Config.MaxGroupSize
-    else
-        return true
-    end
-end
-
 local function generateJobId()
     local jobId = "RJ-" .. math.random(1111, 9999)
     while ActiveJobs[jobId] ~= nil do
@@ -57,7 +37,6 @@ local function generateJobId()
 end
 
 local function activateRun(src, jobDiff, jobLocation)
-    TriggerClientEvent('QBCore:Notify', src, Lang:t("success.payment_success"), 'success')
     local jobId = generateJobId()
 
     ActiveJobs[jobId] = {
@@ -69,79 +48,18 @@ local function activateRun(src, jobDiff, jobLocation)
     }
     TriggerEvent('cw-raidjob2:server:coolout', src)
 
-    if Config.UseRenewedPhoneGroups and exports['qb-phone']:GetGroupByMembers(src) then
-        local group = exports['qb-phone']:GetGroupByMembers(src)
-        local members = exports['qb-phone']:getGroupMembers(group)
-
-        local memberTable = {}
-        for i, v in pairs(members) do
-            if useDebug then
-               print('member', i,v)
-            end
-            memberTable[i] = 1
-            TriggerClientEvent('cw-raidjob2:client:runactivate', i, jobId, jobDiff, jobLocation)
-        end
-        ActiveJobs[jobId].Group = memberTable
-    else
-        ActiveJobs[jobId].Group = {
-            [src] = 1
-        }
-        TriggerClientEvent('cw-raidjob2:client:runactivate', src, jobId, jobDiff, jobLocation)
-    end
+    ActiveJobs[jobId].Group = {
+        [src] = 1
+    }
+    TriggerClientEvent('cw-raidjob2:client:runactivate', src, jobId, jobDiff, jobLocation)
 end
 
 RegisterServerEvent('cw-raidjob2:server:start', function(jobDiff, jobLocation)
     local src = source
-	local Player = QBCore.Functions.GetPlayer(src)
     if useDebug then
        print(jobDiff, jobLocation)
     end
-    if verifyIsLeader and verifyGroupSize then
-        if Config.UseTokens then
-            TriggerEvent('cw-tokens:server:TakeToken', src, Config.Jobs[jobDiff].token)
-            TriggerClientEvent('QBCore:Notify', src, Lang:t("success.payment_success"), 'success')
-            activateRun(src, jobDiff, jobLocation)
-        else
-            local paymentType = Config.Jobs[jobDiff].paymentType
-            local runCost = Config.Jobs[jobDiff].runCost
-            if useDebug then
-                print('payout', paymentType, runCost)
-            end
-            if paymentType == 'cash' then
-                if Player.PlayerData.money['cash'] >= runCost then
-                    Player.Functions.RemoveMoney('cash', runCost)
-                    activateRun(src, jobDiff, jobLocation)
-                else
-                    TriggerClientEvent('QBCore:Notify', source, Lang:t("error.you_dont_have_enough_money"), 'error')
-                end
-            elseif paymentType == 'bank' then
-                if Player.PlayerData.money['bank'] >= runCost then
-                    Player.Functions.RemoveMoney('bank', runCost)
-                    activateRun(src, jobDiff, jobLocation)
-                else
-                    TriggerClientEvent('QBCore:Notify', source, Lang:t("error.you_dont_have_enough_money"), 'error')
-                end
-            elseif paymentType == 'crypto' then
-                if Config.UseRenewedCrypto then
-                    if exports['qb-phone']:hasEnough(src, Config.CryptoType, runCost) then
-                        exports['qb-phone']:RemoveCrypto(src, Config.CryptoType, runCost)
-                        activateRun(src, jobDiff, jobLocation)
-                    else
-                        TriggerClientEvent('QBCore:Notify', source, Lang:t("error.you_dont_have_enough_money"), 'error')
-                    end
-                else
-                    if Player.PlayerData.money['crypto'] >= runCost then
-                        Player.Functions.RemoveMoney('crypto', tonumber(runCost))
-                        activateRun(src, jobDiff, jobLocation)
-                    else
-                        TriggerClientEvent('QBCore:Notify', source, Lang:t("error.you_dont_have_enough_money"), 'error')
-                    end
-                end
-            end
-
-
-        end
-    end
+    activateRun(src, jobDiff, jobLocation)
 end)
 
 local function shallowCopy(original)
