@@ -120,6 +120,22 @@ local function hasContent(object, diff)
     end
 end
 
+CreateThread(function()
+    while true do
+        for diff, job in pairs(Config.Jobs) do
+            local ped = PlayerPedId()            -- get local ped
+            local plyCoords = GetEntityCoords(ped, 0)
+
+            local jobCoords = vector3(job.x, job.y, job.z) 
+            local distance = #(plyCoords - jobCoords)  
+            if distance <= 50.0 then
+                TriggerServerEvent('cw-raidjob2:server:start', diff, job.jobLocationName) 
+            end
+        end
+        Citizen.Wait(1000)				-- mandatory wait
+    end
+end)
+
 local function CleanUp()
     for i, entity in pairs(Entities) do
         print('deleting', entity)
@@ -127,34 +143,6 @@ local function CleanUp()
            DeleteEntity(entity)
         end
     end
-end
-
----Phone msgs
-local function RunStart()
-	Citizen.Wait(2000)
-
-    local sender = Lang:t('mailstart.sender')
-    local subject = Lang:t('mailstart.subject')
-    local message = Lang:t('mailstart.message')
-
-    if Config.Jobs[CurrentJob.jobDiff].Messages then
-        if Config.Jobs[CurrentJob.jobDiff].Messages.Start.sender then
-            sender = Config.Jobs[CurrentJob.jobDiff].Messages.Start.sender
-        end
-        if Config.Jobs[CurrentJob.jobDiff].Messages.Start.subject then
-            subject = Config.Jobs[CurrentJob.jobDiff].Messages.Start.subject
-        end
-        if Config.Jobs[CurrentJob.jobDiff].Messages.Start.message then
-            message = Config.Jobs[CurrentJob.jobDiff].Messages.Start.message
-        end
-    end
-
-	TriggerServerEvent('qb-phone:server:sendNewMail', {
-        sender = sender,
-        subject = subject,
-        message = message,
-	})
-	Citizen.Wait(3000)
 end
 
 local function resetJob ()
@@ -448,15 +436,6 @@ local function checkDistance()
     end)
 end
 
-local function setGps()
-    local circleCenter = Config.Locations[CurrentJob.jobDiff][CurrentJob.jobLocationName].coords
-    blipCircle = AddBlipForRadius(circleCenter.x, circleCenter.y, circleCenter.z , 60.0) -- you can use a higher number for a bigger zone
-    SetBlipHighDetail(blipCircle, true)
-    SetBlipColour(blipCircle, 1)
-    SetBlipAlpha (blipCircle, 128)
-    SetNewWaypoint(circleCenter.x, circleCenter.y)
-end
-
 RegisterNetEvent('cw-raidjob2:client:runactivate', function(jobId, jobDiff, jobLocation)
     onRun = true
     CurrentJob.jobDiff = jobDiff
@@ -470,8 +449,6 @@ RegisterNetEvent('cw-raidjob2:client:runactivate', function(jobId, jobDiff, jobL
         print('diff', CurrentJob.jobDiff)
         print('location', CurrentJob.jobLocationName)
     end
-    RunStart()
-    setGps()
     checkDistance()
 end)
 
@@ -490,42 +467,6 @@ local function generateNameList(diff)
     end
     return names
 end
-
-RegisterNetEvent('cw-raidjob2:client:attemptStart', function (data)
-    if useDebug then
-        print('Starting raid with diff', data.diff)
-        print('Amount of locations for this level:',  getTableLength(data.diff))
-    end
-
-    CurrentJob = Config.Jobs[data.diff]
-    local nameList = generateNameList(data.diff)
-    local rand = nameList[math.random(#nameList)]
-    CurrentJob.jobLocationName = rand
-    if useDebug then
-       print('Randomly selected location:', CurrentJob.jobLocationName)
-    end
-
-    QBCore.Functions.TriggerCallback("cw-raidjob2:server:isInCooldown",function(isCooldown)
-        if not isCooldown then
-            TriggerEvent('animations:client:EmoteCommandStart', {"idle11"})
-            QBCore.Functions.Progressbar("start_job", Lang:t('info.talking_to_boss'), Config.BossTalkTime , false, true, {
-                disableMovement = true,
-                disableCarMovement = true,
-                disableMouse = false,
-                disableCombat = true,
-            }, {
-            }, {}, {}, function() -- Done
-                TriggerEvent('animations:client:EmoteCommandStart', {"c"})
-                TriggerServerEvent('cw-raidjob2:server:start', data.diff, CurrentJob.jobLocationName)
-            end, function() -- Cancel
-                TriggerEvent('animations:client:EmoteCommandStart', {"c"})
-                QBCore.Functions.Notify(Lang:t("error.canceled"), 'error')
-            end)
-        else
-            QBCore.Functions.Notify(Lang:t("error.someone_recently_did_this"), 'error')
-        end
-    end)
-end)
 
 RegisterNetEvent('cw-raidjob2:client:caseUnlocked', function()
     CurrentJob = {}
